@@ -5,15 +5,14 @@ const Person = require('./models/person')
 const morgan = require('morgan')
 const cors = require('cors')
 
-const errorHandler = (error,request,response,next) => {
+const errorHandler = (error,_request,response,next) => {
   console.error(error.message)
 
   if (error.name === 'CastError'){
-    return response.status(400).send({error:'malformatted id'})
+    return response.status(400).send({ error:'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
-
   next(error)
 }
 
@@ -34,10 +33,10 @@ app.use(morgan((tokens, req, res) => {
 }))
 
 
-app.get('/api/info', (request, response) => {
+app.get('/api/info', (_request, response) => {
   Person.find({}).then(persons => {
     response.send(
-        `
+      `
         <div>
             <p>Phonebook has info for ${persons.length} people</p>
         </div>
@@ -45,10 +44,10 @@ app.get('/api/info', (request, response) => {
             <p>${new Date()}</p>
         </div>`
     )
-    })
+  })
 })
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (_request, response) => {
   Person.find({}).then( person => {
     response.json(person)
   })
@@ -61,31 +60,31 @@ app.get('/api/persons/:id', (request,response) => {
 })
 
 app.post('/api/persons', (request,response) => {
-    const body = request.body
-    if (!body.name || !body.number) {
-        return response.status(400).json({ 
-          error: 'content missing' 
-        })
-      }
-    const person = new Person({
-      name: body.name,
-      number: body.number,
+  const body = request.body
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: 'content missing'
     })
-    person.save().then(p => {
-      response.json(p)
-    }).then(saved => {
-      console.log(`added ${person.name} number ${person.number} to phonebook`)
-      response.json(saved)
-      })  
+  }
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
+  person.save().then(p => {
+    response.json(p)
+  }).then(saved => {
+    console.log(`added ${person.name} number ${person.number} to phonebook`)
+    response.json(saved)
+  })
 })
 
-app.delete('/api/persons/:id', (request,response) => {
-    Person.findByIdAndRemove(request.params.id)
-      .then(result => {
-        response.status(204).end()
-      })
-      .catch(error => next(error))
-      
+app.delete('/api/persons/:id', (request,response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
