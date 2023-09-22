@@ -1,7 +1,0 @@
-POST https://back-end-1ooz.onrender.com/api/persons
-Content-Type: application/json
-
-{
-     "name" : "batman",
-    "number": "12-43-234345"
-}
